@@ -1,0 +1,19 @@
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local audio files (exclude from Git to save space)
+music/*
+!music/.gitkeep
+
+# FFmpeg binaries (downloaded locally)
+ffmpeg.exe
+ffprobe.exe
+
+# IDE / System configurations
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
