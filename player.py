@@ -325,6 +325,7 @@ def download_thread_proc(url):
     download_info = ""
     
     music_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music")
+    cookie_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt")
     
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -347,6 +348,11 @@ def download_thread_proc(url):
         'youtube_include_hls_playlist': False,  # Speeds up connection by bypassing HLS
     }
     
+    # If a manual cookies.txt is provided in the project folder, use it directly
+    if os.path.exists(cookie_file):
+        ydl_opts['cookiefile'] = cookie_file
+        download_status = "Menghubungi (via cookies.txt)..."
+        
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # Extract info to get clean title

@@ -17,3 +17,7 @@ ffprobe.exe
 .idea/
 .DS_Store
 Thumbs.db
+
+# Private cookies file for YouTube authentication
+cookies.txt
+
