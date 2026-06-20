@@ -361,10 +361,33 @@ def download_thread_proc(url):
             # Push dynamic update status
             status_msg = f"[DOWNLOAD SUKSES] Berhasil mengunduh: {basename}"
             status_type = "success"
+            return
     except Exception as e:
+        err_msg = str(e)
+        if "sign in" in err_msg.lower() or "confirm you're not a bot" in err_msg.lower() or "bot" in err_msg.lower():
+            # Bot check detected, retry with browser cookies
+            download_status = "Otentikasi Browser..."
+            
+            ydl_opts_cookies = ydl_opts.copy()
+            ydl_opts_cookies['cookiesfrombrowser'] = ('chrome', 'edge', 'firefox', 'brave')
+            
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts_cookies) as ydl:
+                    info = ydl.extract_info(url, download=True)
+                    filename = ydl.prepare_filename(info)
+                    basename = os.path.splitext(os.path.basename(filename))[0] + ".mp3"
+                    download_status = "Selesai"
+                    download_info = basename
+                    playlist = get_playlist()
+                    status_msg = f"[DOWNLOAD SUKSES] Berhasil mengunduh (via Cookies): {basename}"
+                    status_type = "success"
+                    return
+            except Exception as retry_e:
+                err_msg = str(retry_e)
+                
         download_status = "Gagal"
-        download_info = str(e)[:40]
-        status_msg = f"[DOWNLOAD GAGAL] {str(e)}"
+        download_info = err_msg[:40]
+        status_msg = f"[DOWNLOAD GAGAL] {err_msg}"
         status_type = "error"
 
 def start_download(url):
