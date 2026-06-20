@@ -365,25 +365,33 @@ def download_thread_proc(url):
     except Exception as e:
         err_msg = str(e)
         if "sign in" in err_msg.lower() or "confirm you're not a bot" in err_msg.lower() or "bot" in err_msg.lower():
-            # Bot check detected, retry with browser cookies
-            download_status = "Otentikasi Browser..."
+            # Bot check detected, retry with browser cookies one-by-one to prevent keyring crashes
+            browsers = ['chrome', 'edge', 'brave', 'firefox']
+            success_dl = False
             
-            ydl_opts_cookies = ydl_opts.copy()
-            ydl_opts_cookies['cookiesfrombrowser'] = ('chrome', 'edge', 'firefox', 'brave')
+            for browser in browsers:
+                download_status = f"Otentikasi {browser.capitalize()}..."
+                ydl_opts_cookies = ydl_opts.copy()
+                ydl_opts_cookies['cookiesfrombrowser'] = (browser,)
+                
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts_cookies) as ydl:
+                        info = ydl.extract_info(url, download=True)
+                        filename = ydl.prepare_filename(info)
+                        basename = os.path.splitext(os.path.basename(filename))[0] + ".mp3"
+                        download_status = "Selesai"
+                        download_info = basename
+                        playlist = get_playlist()
+                        status_msg = f"[DOWNLOAD SUKSES] Berhasil mengunduh (via {browser.capitalize()}): {basename}"
+                        status_type = "success"
+                        success_dl = True
+                        break
+                except Exception as retry_e:
+                    err_msg = f"Gagal via {browser.capitalize()}: {str(retry_e)}"
+                    continue
             
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts_cookies) as ydl:
-                    info = ydl.extract_info(url, download=True)
-                    filename = ydl.prepare_filename(info)
-                    basename = os.path.splitext(os.path.basename(filename))[0] + ".mp3"
-                    download_status = "Selesai"
-                    download_info = basename
-                    playlist = get_playlist()
-                    status_msg = f"[DOWNLOAD SUKSES] Berhasil mengunduh (via Cookies): {basename}"
-                    status_type = "success"
-                    return
-            except Exception as retry_e:
-                err_msg = str(retry_e)
+            if success_dl:
+                return
                 
         download_status = "Gagal"
         download_info = err_msg[:40]
